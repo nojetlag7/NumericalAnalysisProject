@@ -232,3 +232,5 @@ For questions or issues:
 ---
 
 **Note**: This project uses hardcoded stock price data to ensure consistent results and avoid external dependencies. The data simulates realistic stock price movements for educational purposes.
+**NB**: slight issue with forward difference computation. will fix later
+
