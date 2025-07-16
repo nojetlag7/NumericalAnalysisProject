@@ -1,27 +1,27 @@
-# Numerical Methods Stock Price Prediction Project
+# Numerical Methods Gap-Filling Analysis Project
 
 ## 📊 Project Overview
 
-This project compares three numerical interpolation methods for generating synthetic stock price data and evaluates their effectiveness in training machine learning models for price prediction. The project demonstrates the practical application of numerical methods in financial data analysis.
+This project demonstrates a realistic approach to filling gaps in stock price data using three numerical interpolation methods. Unlike traditional synthetic data generation, this project simulates real-world scenarios where some data points are missing and need to be recovered using interpolation techniques combined with machine learning prediction.
 
 ### 🎯 Project Goals
 
-1. **Compare three interpolation methods:**
+1. **Compare three interpolation methods for gap filling:**
    - Lagrange interpolation
    - Newton's divided difference interpolation
-   - Newton's forward difference (for extrapolation)
+   - Cubic Spline interpolation
 
-2. **Generate synthetic training data** using only the first 50 real stock prices
-3. **Train separate Linear Regression models** for each interpolation method
-4. **Evaluate and compare** the performance of each method using statistical metrics
-5. **Visualize results** with comprehensive charts and analysis
+2. **Realistic gap-filling scenario** using 200 stock prices with 100 missing values
+3. **Hybrid approach**: Use interpolation for 50 gaps, ML models for remaining 50 gaps
+4. **Evaluate and compare** the effectiveness of each method in a practical context
+5. **Visualize results** with comprehensive gap-filling analysis charts
 
 ## 🔧 Required Libraries
 
 Before running the project, ensure you have the following Python libraries installed:
 
 ```bash
-pip install numpy pandas matplotlib scikit-learn
+pip install numpy pandas matplotlib scikit-learn scipy
 ```
 
 ### Library Details:
@@ -29,13 +29,14 @@ pip install numpy pandas matplotlib scikit-learn
 - **Pandas (>=1.3.0)**: Data manipulation and analysis
 - **Matplotlib (>=3.4.0)**: Data visualization and plotting
 - **Scikit-learn (>=1.0.0)**: Machine learning algorithms and metrics
+- **SciPy (>=1.7.0)**: Scientific computing library for cubic spline interpolation
 
 ## 🚀 How to Run the Project
 
 1. **Clone or download** the project files to your local machine
 2. **Navigate** to the project directory:
    ```bash
-   cd "path/to/AnalyisProject"
+   cd "path/to/NumericalAnalysisProject"
    ```
 3. **Run the main script**:
    ```bash
@@ -43,24 +44,25 @@ pip install numpy pandas matplotlib scikit-learn
    ```
 
 The program will automatically:
-- Load hardcoded stock price data (200 days)
-- Generate synthetic data using each interpolation method
-- Train Linear Regression models
-- Display results table and performance metrics
-- Show comprehensive visualizations
+- Load 200 hardcoded stock prices
+- Create gaps by removing 100 random values
+- Use interpolation methods to fill 50 gaps
+- Train ML models to predict remaining 50 gaps
+- Display comprehensive results and performance metrics
+- Show gap-filling analysis visualizations
 
 ## 📈 Project Methodology
 
 ### Data Flow:
 1. **Original Data**: 200 hardcoded stock prices simulating realistic market movement
-2. **Training Phase**: 
-   - Use first 50 real prices for interpolation
-   - Generate 50 synthetic prices (days 51-100) using each method
-   - Combine into 100-point training datasets
-3. **Prediction Phase**:
-   - Train Linear Regression models on the 100-point datasets
-   - Predict the remaining 100 actual prices (days 101-200)
-4. **Evaluation**: Compare predictions against actual prices using multiple metrics
+2. **Gap Creation**: Randomly remove 100 values (50% of data) to simulate missing data
+3. **Gap Filling Phase**: 
+   - Use interpolation methods to fill 50 of the missing values
+   - Create training dataset with 150 points (100 known + 50 interpolated)
+4. **Prediction Phase**:
+   - Train Linear Regression models on the 150-point datasets
+   - Predict the remaining 50 missing values
+5. **Evaluation**: Compare predictions against actual values using multiple metrics
 
 ### Interpolation Methods Explained:
 
@@ -68,25 +70,25 @@ The program will automatically:
 - **Method**: Constructs a polynomial that passes through all given points
 - **Characteristics**: 
   - Global polynomial approach
-  - Can exhibit oscillations (Runge's phenomenon)
-  - Computationally expensive for large datasets
-- **Use Case**: Works well for smooth, well-behaved data
+  - Can exhibit oscillations with high-degree polynomials
+  - Uses equally spaced points for numerical stability
+- **Use Case**: Works well for smooth, well-behaved data within known ranges
 
 #### 2. **Newton's Divided Difference**
 - **Method**: Builds polynomial using divided differences table
 - **Characteristics**:
   - Efficient for adding new data points
   - More stable than Lagrange for computation
-  - Same polynomial as Lagrange but different computation
-- **Use Case**: Preferred when data points are frequently added
+  - Uses equally spaced points for optimal performance
+- **Use Case**: Preferred when filling gaps in existing datasets
 
-#### 3. **Newton's Forward Difference**
-- **Method**: Uses forward differences for extrapolation
+#### 3. **Cubic Spline Interpolation**
+- **Method**: Uses piecewise cubic polynomials with smooth transitions
 - **Characteristics**:
-  - Designed for equally spaced data points
-  - Better suited for extrapolation beyond known range
-  - Uses factorial terms in computation
-- **Use Case**: Ideal for time series forecasting
+  - Designed specifically for interpolation (gap-filling)
+  - Smooth, continuous curves without oscillations
+  - Minimizes curvature for natural-looking interpolation
+- **Use Case**: Industry standard for filling gaps in continuous data series
 
 ## 📊 Analysis Criteria Explained
 
@@ -154,30 +156,39 @@ The program will automatically:
 ## 📋 Output Explanation
 
 ### Console Output:
-1. **Data Loading**: Confirms successful loading of hardcoded stock prices
-2. **Interpolation Progress**: Shows range of synthetic data generated by each method
-3. **Results Table**: Displays MSE, MAE, and R² scores for each method
-4. **Best Method**: Identifies the method with lowest MSE
-5. **Analysis Summary**: Shows performance improvement and method characteristics
+1. **Data Loading**: Confirms successful loading of 200 hardcoded stock prices
+2. **Gap Analysis**: Shows breakdown of known vs missing data points
+3. **Interpolation Progress**: Displays interpolation MSE and value ranges for each method
+4. **Training Info**: Shows training dataset size (150 points) for each method
+5. **Results Table**: Displays MSE, MAE, and R² scores for model predictions
+6. **Best Method**: Identifies the method with lowest prediction MSE
+7. **Analysis Summary**: Shows performance improvement and method characteristics
 
 ### Visualizations:
-1. **Main Comparison Plot**: Shows actual vs predicted prices for all methods
-2. **MSE Comparison**: Bar chart comparing Mean Squared Error
-3. **R² Score Comparison**: Bar chart comparing R² scores
-4. **Residuals Plot**: Scatter plot of residuals for the best-performing method
-5. **Detailed Analysis**: Individual plots for each interpolation method
+1. **Gap Filling Comparison**: Shows original data, known points, interpolated values, and predictions
+2. **MSE Comparison**: Bar chart comparing Mean Squared Error for model predictions
+3. **R² Score Comparison**: Bar chart comparing R² scores for model predictions
+4. **Error Analysis**: Scatter plot comparing interpolation vs prediction errors
+5. **Method Performance**: Individual analysis for each interpolation method
 
 ## 🔍 Project Insights
 
 ### Expected Results:
-- **Newton's Divided Difference** typically performs best for smooth interpolation
-- **Lagrange Interpolation** may show oscillations with high-degree polynomials
-- **Newton's Forward Difference** is designed for extrapolation but may vary in interpolation performance
+- **Cubic Spline** typically provides the smoothest interpolation for gap-filling
+- **Newton's Divided Difference** provides good balance of accuracy and stability
+- **Lagrange Interpolation** may show oscillations but can be very accurate for smooth data
 
 ### Key Findings:
-- Polynomial interpolation methods can produce unrealistic values for financial data
-- The project implements stability measures (point reduction, value clamping) to handle numerical issues
-- Linear regression training benefits from the synthetic data expansion from 50 to 100 points
+- Gap-filling with interpolation is more realistic than synthetic data generation
+- The hybrid approach (interpolation + ML) provides robust missing value recovery
+- Equally spaced point selection improves numerical stability
+- Training on 150 points (100 known + 50 interpolated) provides sufficient data for good predictions
+
+### Real-World Applications:
+- **Financial Data**: Filling gaps in stock price, trading volume, or economic indicators
+- **Sensor Data**: Recovering missing readings from IoT devices or monitoring systems
+- **Medical Data**: Interpolating missing patient measurements or test results
+- **Scientific Data**: Filling gaps in experimental or observational datasets
 
 ## 🛠️ Technical Implementation Details
 
@@ -189,37 +200,44 @@ The program will automatically:
 
 ### File Structure:
 ```
-AnalyisProject/
-├── main.py              # Main project file
-├── requirements.txt     # Python dependencies
-└── README.md           # This documentation
+NumericalAnalysisProject/
+├── main.py                      # Main project file
+├── requirements.txt             # Python dependencies
+├── README.md                   # This documentation
+└── modules/
+    ├── __init__.py             # Package initialization
+    ├── data_handler.py         # Data loading and management
+    ├── interpolation_methods.py # Three interpolation methods
+    ├── model.py                # Linear regression model
+    └── visualization.py        # Plotting and visualization
 ```
 
 ## 📚 Educational Value
 
 This project demonstrates:
 - **Numerical Methods**: Practical implementation of classical interpolation techniques
-- **Data Science Pipeline**: From data generation to model evaluation
-- **Financial Modeling**: Application of mathematical methods to stock price prediction
+- **Gap-Filling Analysis**: Realistic approach to missing data problems
+- **Hybrid Methodology**: Combining interpolation with machine learning
 - **Performance Analysis**: Comprehensive evaluation using multiple metrics
-- **Visualization**: Clear presentation of results and comparisons
+- **Equal Spacing**: Importance of data point selection for numerical stability
 
 ## 🎓 Academic Applications
 
 Perfect for:
-- **Numerical Methods Courses**: Demonstrates interpolation techniques
-- **Data Science Projects**: Shows complete ML pipeline
-- **Financial Mathematics**: Applies numerical methods to financial data
-- **Algorithm Comparison**: Systematic evaluation of different approaches
+- **Numerical Methods Courses**: Demonstrates interpolation techniques in practical context
+- **Data Science Projects**: Shows realistic gap-filling methodology
+- **Financial Mathematics**: Applies numerical methods to financial data analysis
+- **Algorithm Comparison**: Systematic evaluation of different interpolation approaches
+- **Missing Data Analysis**: Practical approach to handling incomplete datasets
 
 ## 🔧 Customization Options
 
 To modify the project:
-- **Change Stock Data**: Edit the `hardcoded_prices` list in `fetch_stock_data()`
-- **Adjust Data Split**: Modify the 50/50/100 split ratios in `generate_synthetic_data()`
+- **Change Stock Data**: Edit the `hardcoded_prices` list in `data_handler.py`
+- **Adjust Gap Ratio**: Modify the 100 missing values or 50/50 split in `main.py`
 - **Add New Methods**: Implement additional interpolation techniques in `InterpolationMethods`
-- **Different Models**: Replace LinearRegression with other ML algorithms
-- **More Metrics**: Add additional evaluation metrics in `train_and_predict()`
+- **Different Models**: Replace LinearRegression with other ML algorithms in `model.py`
+- **More Metrics**: Add additional evaluation metrics in the `evaluate()` method
 
 ## 📞 Support
 
@@ -231,6 +249,5 @@ For questions or issues:
 
 ---
 
-**Note**: This project uses hardcoded stock price data to ensure consistent results and avoid external dependencies. The data simulates realistic stock price movements for educational purposes.
-**NB**: slight issue with forward difference computation. will fix later
+**Note**: This project uses hardcoded stock price data to ensure consistent results and avoid external dependencies. The data simulates realistic stock price movements for educational purposes. The gap-filling approach provides a practical demonstration of how interpolation methods can be used to recover missing data in real-world scenarios.
 

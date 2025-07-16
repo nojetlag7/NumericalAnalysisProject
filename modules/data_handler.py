@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 
 class DataHandler:
-    # This class handles loading stock data and generating synthetic data
+    # This class handles loading stock data for gap-filling analysis
+    # Provides 200 hardcoded stock prices that simulate realistic market movements
     def __init__(self, ticker='AAPL', days=200):
         self.ticker = ticker
         self.days = days
@@ -11,8 +12,9 @@ class DataHandler:
 
     def fetch_stock_data(self):
         """
-        # Get the stock price data
-        # For this project, we use hardcoded (fixed) prices that look like real stock prices.
+        # Load hardcoded stock price data for gap-filling analysis
+        # For this project, we use 200 fixed prices that simulate realistic stock movements
+        # This ensures consistent results and avoids external API dependencies
         """
         print(f"Using hardcoded stock-like data for {self.ticker}")
         hardcoded_prices = [
@@ -37,6 +39,12 @@ class DataHandler:
             326.40, 328.25, 325.90, 329.60, 331.30, 328.45, 332.70, 334.15, 331.80, 335.40,
             337.60, 334.25, 338.90, 340.35, 337.50, 341.80, 343.25, 340.90, 344.60, 346.15
         ]
+        
+        # Ensure we have enough data
+        if len(hardcoded_prices) < self.days:
+            print(f"Warning: Only {len(hardcoded_prices)} prices available, but {self.days} requested")
+            self.days = len(hardcoded_prices)
+        
         self.prices = np.array(hardcoded_prices[:self.days])
         dates = pd.date_range(start='2024-01-01', periods=len(self.prices), freq='D')
         self.data = pd.DataFrame({'Close': self.prices}, index=dates)
