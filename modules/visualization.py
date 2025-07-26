@@ -14,7 +14,7 @@ class Visualization:
             axes[0, 0].plot(res['x_test'], res['y_pred'], color=colors[i], linewidth=2, label=f'{method} Prediction')
         # Add vertical lines to show phase boundaries
         axes[0, 0].axvline(x=50, color='orange', linestyle=':', alpha=0.7, label='Interpolation Start')
-        axes[0, 0].axvline(x=75, color='purple', linestyle=':', alpha=0.7, label='Prediction Start')
+        axes[0, 0].axvline(x=80, color='purple', linestyle=':', alpha=0.7, label='Prediction Start')
         axes[0, 0].set_xlabel('Days')
         axes[0, 0].set_ylabel('Price ($)')
         axes[0, 0].set_title('Price Predictions Comparison')
@@ -53,24 +53,24 @@ class Visualization:
         colors = ['red', 'blue', 'green']
         for i, (method, res) in enumerate(results.items()):
             ax = axes[i]
-            # Plot actual prices (100 points)
+            # Plot actual prices (150 points)
             x_actual = np.arange(len(prices))
             ax.plot(x_actual, prices, 'k-', linewidth=2, label='Actual Prices', alpha=0.7)
             
             # Plot original 50 points used for interpolation
             ax.scatter(np.arange(50), prices[:50], color='orange', s=30, label='Original 50 Points', zorder=5)
             
-            # Plot synthetic data (25 points from day 50-74)
-            synthetic_x = np.arange(50, 75)
-            synthetic_y = res['y_train'][50:]  # This should be 25 points
+            # Plot synthetic data (30 points from day 50-79)
+            synthetic_x = np.arange(50, 80)
+            synthetic_y = res['y_train'][50:]  # This should be 30 points
             ax.plot(synthetic_x, synthetic_y, color=colors[i], linestyle='--', linewidth=2, label=f'{method} Synthetic', alpha=0.8)
             
-            # Plot predictions (25 points from day 75-99)
+            # Plot predictions (70 points from day 80-149)
             ax.plot(res['x_test'], res['y_pred'], color=colors[i], linewidth=2, label=f'{method} Prediction')
             
             # Add vertical lines to show phase boundaries
             ax.axvline(x=50, color='orange', linestyle=':', alpha=0.7, label='Interpolation Start')
-            ax.axvline(x=75, color='purple', linestyle=':', alpha=0.7, label='Prediction Start')
+            ax.axvline(x=80, color='purple', linestyle=':', alpha=0.7, label='Prediction Start')
             
             # Add performance metrics
             ax.text(0.02, 0.98, f'MSE: {res["mse"]:.4f}\nMAE: {res["mae"]:.4f}\nR²: {res["r2"]:.4f}', 

@@ -3,10 +3,10 @@ Numerical Methods Stock Price Prediction Project
 
 # This project shows how to use three different numerical methods to generate synthetic stock prices.
 # Structure:
-# - Dataset: 100 total data points for better numerical stability
-# - Compute synthetic: Use first 50 real prices to create 25 synthetic prices (days 50-74)
-# - Train model: Use first 75 points (50 real + 25 synthetic) to train LinearRegression
-# - Analyze/predict: Use remaining 25 points (days 75-99) for testing and evaluation
+# - Dataset: 150 total data points for comprehensive numerical analysis
+# - Compute synthetic: Use first 50 real prices to create 30 synthetic prices (days 50-79)
+# - Train model: Use first 80 points (50 real + 30 synthetic) to train LinearRegression
+# - Analyze/predict: Use remaining 70 points (days 80-149) for testing and evaluation
 # 
 # The three numerical methods are:
 # 1. Lagrange interpolation (traditional polynomial fitting approach)
@@ -35,7 +35,7 @@ def main():
 
     # Set up modules
     ticker = 'AAPL'
-    days = 100  # Reduced dataset size for better numerical stability
+    days = 150  # Extended dataset size for comprehensive method comparison
     data_handler = DataHandler(ticker=ticker, days=days)
     numerical_methods = NumericalMethods()
     model = StockModel()
@@ -130,15 +130,15 @@ def generate_synthetic_data(prices, method_name, interpolation_func):
     """
     Generate synthetic data using interpolation methods.
     - Use first 50 real prices
-    - Generate 25 synthetic prices (days 50-74)
-    - Return combined 75 data points for training
+    - Generate 30 synthetic prices (days 50-79)
+    - Return combined 80 data points for training
     """
     # Use first 50 real values
     x_real = np.arange(50)
     y_real = prices[:50]
     
-    # Generate 25 synthetic values (days 50-74)
-    x_synthetic = np.arange(50, 75)
+    # Generate 30 synthetic values (days 50-79)
+    x_synthetic = np.arange(50, 80)
     
     try:
         y_synthetic = interpolation_func(x_real, y_real, x_synthetic)
@@ -161,28 +161,28 @@ def generate_synthetic_data(prices, method_name, interpolation_func):
         print(f"  Error: {str(e)}")
         y_synthetic = np.interp(x_synthetic, x_real, y_real)
     
-    # Combine real and synthetic data for training (75 points total)
-    x_combined = np.arange(75)
+    # Combine real and synthetic data for training (80 points total)
+    x_combined = np.arange(80)
     y_combined = np.concatenate([y_real, y_synthetic])
     
     return x_combined, y_combined
 
 def train_and_predict(prices, x_train, y_train, model):
     """
-    Train the model on 75 points and predict the remaining 25 points.
+    Train the model on 80 points and predict the remaining 70 points.
     """
-    # Train model on 75 points (50 real + 25 synthetic)
+    # Train model on 80 points (50 real + 30 synthetic)
     model.train(x_train, y_train)
     
-    # Test on remaining 25 points (days 75-99)
-    remaining_days = len(prices) - 75
+    # Test on remaining 70 points (days 80-149)
+    remaining_days = len(prices) - 80
     if remaining_days <= 0:
         print(f"Warning: Not enough data for prediction phase")
         return np.array([]), np.array([]), np.array([]), 0, 0, 0
     
-    x_test = np.arange(75, 75 + remaining_days)
+    x_test = np.arange(80, 80 + remaining_days)
     y_pred = model.predict(x_test)
-    y_actual = prices[75:75 + remaining_days]
+    y_actual = prices[80:80 + remaining_days]
     
     mse, mae, r2 = model.evaluate(y_actual, y_pred)
     return y_pred, x_test, y_actual, mse, mae, r2

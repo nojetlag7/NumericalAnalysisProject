@@ -3,7 +3,7 @@ import pandas as pd
 
 class DataHandler:
     # This class handles loading stock data and generating synthetic data
-    def __init__(self, ticker='AAPL', days=100):
+    def __init__(self, ticker='AAPL', days=150):
         self.ticker = ticker
         self.days = days
         self.data = None
@@ -17,7 +17,7 @@ class DataHandler:
         """
         print(f"Using realistic stock-like data for {self.ticker}")
         # More realistic stock prices with various patterns: trends, volatility, corrections
-        # Using 100 data points for better numerical stability
+        # Using 150 data points for extended comparison of numerical methods
         hardcoded_prices = [
             150.25, 148.90, 152.30, 149.80, 155.20, 153.40, 147.60, 151.90, 154.80, 158.30,
             155.60, 152.80, 149.40, 153.70, 157.25, 160.80, 158.20, 155.90, 162.40, 159.70,
@@ -28,7 +28,13 @@ class DataHandler:
             201.50, 206.80, 210.40, 207.90, 204.60, 208.30, 212.80, 216.50, 213.20, 210.90,
             215.60, 219.40, 216.80, 213.50, 218.20, 221.90, 225.60, 222.30, 219.80, 224.50,
             228.20, 225.90, 222.60, 227.30, 231.80, 228.40, 224.70, 229.60, 233.90, 237.20,
-            234.80, 231.50, 236.20, 240.60, 237.90, 234.40, 239.80, 243.50, 246.20, 242.90
+            234.80, 231.50, 236.20, 240.60, 237.90, 234.40, 239.80, 243.50, 246.20, 242.90,
+            # Extended data (days 100-149) - continuation with realistic market movements
+            248.70, 251.40, 247.80, 244.60, 250.30, 254.90, 251.20, 247.90, 253.60, 257.40,
+            254.80, 251.50, 256.20, 260.80, 257.40, 254.10, 259.70, 263.50, 260.20, 256.90,
+            262.60, 266.40, 263.80, 260.50, 265.20, 269.80, 266.40, 263.10, 268.70, 272.50,
+            269.90, 266.60, 271.30, 275.80, 272.40, 269.10, 274.70, 278.50, 275.90, 272.60,
+            277.30, 281.80, 278.40, 275.10, 280.70, 284.50, 281.90, 278.60, 283.30, 287.80
         ]
         self.prices = np.array(hardcoded_prices[:self.days])
         dates = pd.date_range(start='2024-01-01', periods=len(self.prices), freq='D')

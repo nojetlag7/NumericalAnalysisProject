@@ -173,7 +173,7 @@ class NumericalMethods:
         # Runge-Kutta 4th order method for stock price modeling (high-accuracy differential equation approach)
         # This method is much more accurate than Euler's method for solving differential equations.
         # It uses 4 slope evaluations per step to get better accuracy.
-        # Models stock price as: dS/dt = μ*S + σ*S*ε + mean_reversion_force
+        # Models stock price as: dS/dt = μ*S + σ*S*ε (same as Euler for fair comparison)
         #
         # Args:
         #   x_points: The x values we know (e.g., days)
@@ -190,80 +190,86 @@ class NumericalMethods:
             else:
                 return np.full_like(x_target, y_points[-1])
         
-        # Calculate parameters from recent price history
-        recent_points = min(15, len(x_points))
+        # Calculate parameters from recent price history (same as Euler method)
+        recent_points = min(10, len(x_points))  # Use same number of points as Euler
         recent_x = x_points[-recent_points:]
         recent_y = y_points[-recent_points:]
         
-        # Calculate returns and statistical parameters
+        # Calculate returns (percentage changes)
         returns = np.diff(recent_y) / recent_y[:-1]
         
-        # Estimate parameters
+        # Estimate drift (average return) and volatility (standard deviation of returns)
         drift = np.mean(returns) if len(returns) > 0 else 0.0
-        volatility = np.std(returns) if len(returns) > 1 else 0.01
+        volatility = np.std(returns) if len(returns) > 1 else 0.01  # Default small volatility
         
-        # Calculate mean reversion parameters
-        long_term_mean = np.mean(recent_y)
-        mean_reversion_speed = 0.1  # How fast prices revert to mean
-        
-        # Limit extreme values for stability
-        drift = np.clip(drift, -0.05, 0.05)  # Max 5% daily drift
-        volatility = np.clip(volatility, 0.001, 0.03)  # 0.1% to 3% daily volatility
-        
-        def stock_price_derivative(price, time):
-            """
-            Define the differential equation for stock price evolution
-            dS/dt = drift*S + volatility*S*noise + mean_reversion*(mean - S)
-            """
-            # Set seed based on time for reproducible randomness
-            np.random.seed(int(42 + time * 10))
-            
-            # Generate controlled random noise
-            noise = np.random.normal(0, 1)
-            noise = np.clip(noise, -1.5, 1.5)  # Limit extreme movements
-            
-            # Components of the differential equation
-            drift_component = drift * price
-            volatility_component = volatility * price * noise
-            mean_reversion_component = mean_reversion_speed * (long_term_mean - price)
-            
-            return drift_component + volatility_component + mean_reversion_component
+        # Limit extreme values for stability (same constraints as Euler)
+        drift = np.clip(drift, -0.1, 0.1)  # Max 10% daily change
+        volatility = np.clip(volatility, 0.001, 0.05)  # 0.1% to 5% daily volatility
         
         # Starting values
         current_price = float(y_points[-1])
         current_time = float(x_points[-1])
         dt = 1.0  # Time step (1 day)
         
+        # Pre-generate random numbers for fair comparison
+        total_steps = sum(int(target_time - current_time) for target_time in x_target)
+        np.random.seed(42)  # Set seed before generating
+        random_noises = []
+        for i in range(total_steps):
+            noise = np.random.normal(0, 1)
+            noise = np.clip(noise, -2, 2)  # Limit to ±2 standard deviations
+            random_noises.append(noise)
+        
+        def stock_price_derivative(price, step_index):
+            """
+            Define the differential equation for stock price evolution
+            dS/dt = drift*S + volatility*S*noise (same model as Euler)
+            """
+            # Use the same random noise for all k evaluations in RK4 step
+            if step_index < len(random_noises):
+                noise = random_noises[step_index]
+            else:
+                noise = 0.0  # Fallback
+            
+            # Components of the differential equation (same as Euler)
+            drift_component = drift * price
+            volatility_component = volatility * price * noise
+            
+            return drift_component + volatility_component
+        
         result = np.zeros_like(x_target, dtype=np.float64)
+        step_counter = 0
         
         for i, target_time in enumerate(x_target):
             steps = int(target_time - current_time)
             price = current_price
-            time = current_time
             
             for step in range(steps):
                 # Runge-Kutta 4th order method
+                # Use the same noise for all k evaluations in this step
+                current_step_index = step_counter
+                
                 # k1 = dt * f(t, y)
-                k1 = dt * stock_price_derivative(price, time)
+                k1 = dt * stock_price_derivative(price, current_step_index)
                 
                 # k2 = dt * f(t + dt/2, y + k1/2)
-                k2 = dt * stock_price_derivative(price + k1/2, time + dt/2)
+                k2 = dt * stock_price_derivative(price + k1/2, current_step_index)
                 
                 # k3 = dt * f(t + dt/2, y + k2/2)
-                k3 = dt * stock_price_derivative(price + k2/2, time + dt/2)
+                k3 = dt * stock_price_derivative(price + k2/2, current_step_index)
                 
                 # k4 = dt * f(t + dt, y + k3)
-                k4 = dt * stock_price_derivative(price + k3, time + dt)
+                k4 = dt * stock_price_derivative(price + k3, current_step_index)
                 
                 # Combine the slopes: y(t+dt) = y(t) + (k1 + 2*k2 + 2*k3 + k4)/6
                 price_change = (k1 + 2*k2 + 2*k3 + k4) / 6
                 price += price_change
                 
-                # Ensure price stays positive and reasonable
-                price = max(price, current_price * 0.3)  # Don't drop below 30% of starting price
-                price = min(price, current_price * 3.0)   # Don't rise above 300% of starting price
+                # Ensure price stays positive and reasonable (same bounds as Euler)
+                price = max(price, current_price * 0.5)  # Don't drop below 50% of starting price
+                price = min(price, current_price * 2.0)   # Don't rise above 200% of starting price
                 
-                time += dt
+                step_counter += 1
             
             result[i] = price
         
