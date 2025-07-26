@@ -1,13 +1,17 @@
 """
 Numerical Methods Stock Price Prediction Project
 
-# This project shows how to use three different interpolation methods to generate fake (synthetic) stock prices.
-# We use the first 50 real prices, then create 50 synthetic prices using each method.
-# After that, we train a simple machine learning model (LinearRegression) to predict the next 150 prices.
-# The three interpolation methods are:
-# 1. Lagrange interpolation (uses all points to fit a curve)
-# 2. Newton's divided difference interpolation (good for adding new points)
-# 3. Newton's forward difference (best for equally spaced data and extrapolation)
+# This project shows how to use three different numerical methods to generate synthetic stock prices.
+# Structure:
+# - Dataset: 100 total data points for better numerical stability
+# - Compute synthetic: Use first 50 real prices to create 25 synthetic prices (days 50-74)
+# - Train model: Use first 75 points (50 real + 25 synthetic) to train LinearRegression
+# - Analyze/predict: Use remaining 25 points (days 75-99) for testing and evaluation
+# 
+# The three numerical methods are:
+# 1. Lagrange interpolation (traditional polynomial fitting approach)
+# 2. Euler's method (differential equation approach for financial modeling)
+# 3. Runge-Kutta 4th order (high-accuracy differential equation approach)
 """
 
 
@@ -15,9 +19,9 @@ Numerical Methods Stock Price Prediction Project
 import numpy as np
 import warnings
 warnings.filterwarnings('ignore')
-from modules.interpolation_methods import InterpolationMethods
+from modules.numerical_methods import NumericalMethods
 from modules.data_handler import DataHandler
-from modules.model import StockModel
+from modules.stock_model import StockModel
 from modules.visualization import Visualization
 
 
@@ -31,9 +35,9 @@ def main():
 
     # Set up modules
     ticker = 'AAPL'
-    days = 200
+    days = 100  # Reduced dataset size for better numerical stability
     data_handler = DataHandler(ticker=ticker, days=days)
-    interpolation = InterpolationMethods()
+    numerical_methods = NumericalMethods()
     model = StockModel()
     viz = Visualization()
 
@@ -43,9 +47,9 @@ def main():
     prices = data_handler.get_prices()
 
     results = {}
-    # Method 1: Lagrange interpolation
+    # Method 1: Lagrange interpolation (traditional approach)
     print("\n1. Running Lagrange interpolation...")
-    x_train, y_train = generate_synthetic_data(prices, "Lagrange", interpolation.lagrange_interpolation)
+    x_train, y_train = generate_synthetic_data(prices, "Lagrange", numerical_methods.lagrange_interpolation)
     y_pred, x_test, y_actual, mse, mae, r2 = train_and_predict(prices, x_train, y_train, model)
     results["Lagrange"] = {
         'x_train': x_train,
@@ -58,11 +62,11 @@ def main():
         'r2': r2
     }
 
-    # Method 2: Newton's divided difference
-    print("2. Running Newton's divided difference...")
-    x_train, y_train = generate_synthetic_data(prices, "Newton Divided Diff", interpolation.newton_divided_difference)
+    # Method 2: Euler's method (differential equation approach)
+    print("2. Running Euler's method...")
+    x_train, y_train = generate_synthetic_data(prices, "Euler Method", numerical_methods.euler_method)
     y_pred, x_test, y_actual, mse, mae, r2 = train_and_predict(prices, x_train, y_train, model)
-    results["Newton Divided Diff"] = {
+    results["Euler Method"] = {
         'x_train': x_train,
         'y_train': y_train,
         'x_test': x_test,
@@ -73,11 +77,11 @@ def main():
         'r2': r2
     }
 
-    # Method 3: Newton's forward difference
-    print("3. Running Newton's forward difference...")
-    x_train, y_train = generate_synthetic_data(prices, "Newton Forward Diff", interpolation.newton_forward_difference)
+    # Method 3: Runge-Kutta 4th order (high-accuracy differential equation approach)
+    print("3. Running Runge-Kutta 4th order...")
+    x_train, y_train = generate_synthetic_data(prices, "Runge-Kutta 4th", numerical_methods.runge_kutta_4th_order)
     y_pred, x_test, y_actual, mse, mae, r2 = train_and_predict(prices, x_train, y_train, model)
-    results["Newton Forward Diff"] = {
+    results["Runge-Kutta 4th"] = {
         'x_train': x_train,
         'y_train': y_train,
         'x_test': x_test,
@@ -117,42 +121,69 @@ def main():
     print(f"Worst performing method: {worst_method}")
     print(f"Performance improvement: {improvement:.2f}%")
     print("\nMethod Characteristics:")
-    print("- Lagrange: Global polynomial, can have oscillations")
-    print("- Newton Divided Diff: Efficient for adding new points")
-    print("- Newton Forward Diff: Better for extrapolation with equal spacing")
+    print("- Lagrange: Traditional polynomial interpolation, can have oscillations")
+    print("- Euler Method: First-order differential equation solver, models drift and volatility")
+    print("- Runge-Kutta 4th: High-accuracy differential equation solver with mean reversion")
 
 
 def generate_synthetic_data(prices, method_name, interpolation_func):
+    """
+    Generate synthetic data using interpolation methods.
+    - Use first 50 real prices
+    - Generate 25 synthetic prices (days 50-74)
+    - Return combined 75 data points for training
+    """
     # Use first 50 real values
     x_real = np.arange(50)
     y_real = prices[:50]
-    x_synthetic = np.arange(50, 100)
+    
+    # Generate 25 synthetic values (days 50-74)
+    x_synthetic = np.arange(50, 75)
+    
     try:
         y_synthetic = interpolation_func(x_real, y_real, x_synthetic)
+        
+        # More reasonable clipping bounds for the smaller dataset
         y_min, y_max = np.min(y_real), np.max(y_real)
         price_range = y_max - y_min
-        lower_bound = y_min - 0.5 * price_range
-        upper_bound = y_max + 0.5 * price_range
+        lower_bound = y_min - 0.3 * price_range  # Tighter bounds
+        upper_bound = y_max + 0.3 * price_range  # Tighter bounds
+        
         y_synthetic = np.clip(y_synthetic, lower_bound, upper_bound)
+        
         print(f"  Generated synthetic data for {method_name}")
         print(f"  Original range: [{y_min:.2f}, {y_max:.2f}]")
         print(f"  Synthetic range: [{np.min(y_synthetic):.2f}, {np.max(y_synthetic):.2f}]")
+        print(f"  Clipping bounds: [{lower_bound:.2f}, {upper_bound:.2f}]")
+        
     except Exception as e:
         print(f"  Warning: {method_name} failed, using linear interpolation fallback")
+        print(f"  Error: {str(e)}")
         y_synthetic = np.interp(x_synthetic, x_real, y_real)
-    x_combined = np.arange(100)
+    
+    # Combine real and synthetic data for training (75 points total)
+    x_combined = np.arange(75)
     y_combined = np.concatenate([y_real, y_synthetic])
+    
     return x_combined, y_combined
 
 def train_and_predict(prices, x_train, y_train, model):
+    """
+    Train the model on 75 points and predict the remaining 25 points.
+    """
+    # Train model on 75 points (50 real + 25 synthetic)
     model.train(x_train, y_train)
-    remaining_days = len(prices) - 100
+    
+    # Test on remaining 25 points (days 75-99)
+    remaining_days = len(prices) - 75
     if remaining_days <= 0:
         print(f"Warning: Not enough data for prediction phase")
         return np.array([]), np.array([]), np.array([]), 0, 0, 0
-    x_test = np.arange(100, 100 + remaining_days)
+    
+    x_test = np.arange(75, 75 + remaining_days)
     y_pred = model.predict(x_test)
-    y_actual = prices[100:100 + remaining_days]
+    y_actual = prices[75:75 + remaining_days]
+    
     mse, mae, r2 = model.evaluate(y_actual, y_pred)
     return y_pred, x_test, y_actual, mse, mae, r2
 
